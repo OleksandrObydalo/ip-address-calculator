@@ -1,194 +1,135 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Get all input elements
-    const octetInputs = document.querySelectorAll('.octet');
+document.addEventListener('DOMContentLoaded', () => {
+    // Get DOM references
+    const octet1 = document.getElementById('octet1');
+    const octet2 = document.getElementById('octet2');
+    const octet3 = document.getElementById('octet3');
+    const octet4 = document.getElementById('octet4');
     const cidrInput = document.getElementById('cidr');
-    const bits = document.querySelectorAll('.bit');
+    const binaryVis = document.getElementById('binary-vis');
     
-    // Results elements
-    const netmaskElement = document.getElementById('netmask');
-    const cidrBaseElement = document.getElementById('cidr-base');
-    const broadcastElement = document.getElementById('broadcast');
-    const ipCountElement = document.getElementById('ip-count');
-    const firstIpElement = document.getElementById('first-ip');
-    const lastIpElement = document.getElementById('last-ip');
+    // Result outputs
+    const netmaskOutput = document.getElementById('netmask');
+    const networkOutput = document.getElementById('network');
+    const broadcastOutput = document.getElementById('broadcast');
+    const hostsOutput = document.getElementById('hosts');
+    const firstIPOutput = document.getElementById('first-ip');
+    const lastIPOutput = document.getElementById('last-ip');
     
-    // Buttons
-    const copyCidrButton = document.getElementById('copy-cidr');
-    const copyShareButton = document.getElementById('copy-share');
+    // Action buttons
+    const copyButton = document.getElementById('copy-cidr');
+    const shareLinkButton = document.getElementById('copy-share-link');
     
-    // FAQ functionality
-    const faqItems = document.querySelectorAll('.faq-item');
-    
-    // Initialize the calculator
-    updateAll();
-    
-    // Add event listeners to input fields
-    octetInputs.forEach((input, index) => {
-        input.addEventListener('input', function() {
-            validateOctetInput(this);
-            updateBinaryRepresentation();
-            updateResults();
+    // Input constraints
+    [octet1, octet2, octet3, octet4].forEach(input => {
+        input.addEventListener('input', () => {
+            const value = parseInt(input.value) || 0;
+            if (value < 0) input.value = 0;
+            if (value > 255) input.value = 255;
+            calculateAll();
         });
+    });
+
+    cidrInput.addEventListener('input', () => {
+        const value = parseInt(cidrInput.value) || 0;
+        if (value < 0) cidrInput.value = 0;
+        if (value > 32) cidrInput.value = 32;
+        calculateAll();
+    });
+    
+    // Check URL for parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('ip') && urlParams.has('cidr')) {
+        const ip = urlParams.get('ip').split('.');
+        const cidr = urlParams.get('cidr');
         
-        // Add key navigation (tabs and arrows)
-        input.addEventListener('keydown', function(e) {
-            handleInputNavigation(e, octetInputs, index, cidrInput);
-        });
-    });
-    
-    cidrInput.addEventListener('input', function() {
-        validateCidrInput(this);
-        updateBinaryRepresentation();
-        updateResults();
-    });
-    
-    cidrInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab' && e.shiftKey) {
-            e.preventDefault();
-            octetInputs[octetInputs.length - 1].focus();
-        }
-    });
-    
-    // Copy buttons
-    copyCidrButton.addEventListener('click', function() {
-        copyToClipboard(getCurrentCIDRNotation());
-        showCopyNotification(this, 'Copied!');
-    });
-    
-    copyShareButton.addEventListener('click', function() {
-        const shareUrl = generateShareUrl();
-        copyToClipboard(shareUrl);
-        showCopyNotification(this, 'Link copied!');
-    });
-    
-    // FAQ toggling
-    faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
-        question.addEventListener('click', function() {
-            item.classList.toggle('active');
-        });
-    });
-    
-    // Check URL parameters for shared link
-    checkUrlParameters();
-    
-    // Functions
-    function validateOctetInput(input) {
-        // Remove non-numeric characters
-        input.value = input.value.replace(/[^0-9]/g, '');
-        
-        // Ensure value is between 0-255
-        let value = parseInt(input.value);
-        if (isNaN(value)) {
-            input.value = '0';
-        } else if (value > 255) {
-            input.value = '255';
+        if (ip.length === 4 && !isNaN(cidr) && cidr >= 0 && cidr <= 32) {
+            octet1.value = ip[0];
+            octet2.value = ip[1];
+            octet3.value = ip[2];
+            octet4.value = ip[3];
+            cidrInput.value = cidr;
         }
     }
     
-    function validateCidrInput(input) {
-        // Remove non-numeric characters
-        input.value = input.value.replace(/[^0-9]/g, '');
+    // Calculate everything on load
+    calculateAll();
+    
+    // Set up accordion functionality
+    setupAccordion();
+    
+    // Button functionality
+    copyButton.addEventListener('click', () => {
+        const ip = `${octet1.value}.${octet2.value}.${octet3.value}.${octet4.value}/${cidrInput.value}`;
+        navigator.clipboard.writeText(ip)
+            .then(() => {
+                copyButton.textContent = 'Copied!';
+                setTimeout(() => copyButton.textContent = 'Copy CIDR', 2000);
+            })
+            .catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+    });
+    
+    shareLinkButton.addEventListener('click', () => {
+        const ip = `${octet1.value}.${octet2.value}.${octet3.value}.${octet4.value}`;
+        const url = `${window.location.origin}${window.location.pathname}?ip=${ip}&cidr=${cidrInput.value}`;
         
-        // Ensure value is between 0-32
-        let value = parseInt(input.value);
-        if (isNaN(value)) {
-            input.value = '24';
-        } else if (value > 32) {
-            input.value = '32';
-        } else if (value < 0) {
-            input.value = '0';
-        }
-    }
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                shareLinkButton.textContent = 'Copied!';
+                setTimeout(() => shareLinkButton.textContent = 'Copy Share Link', 2000);
+            })
+            .catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+    });
     
-    function handleInputNavigation(e, inputs, currentIndex, cidrInput) {
-        if (e.key === 'ArrowRight' && e.target.selectionStart === e.target.value.length) {
-            e.preventDefault();
-            if (currentIndex < inputs.length - 1) {
-                inputs[currentIndex + 1].focus();
-            } else {
-                cidrInput.focus();
-            }
-        } else if (e.key === 'ArrowLeft' && e.target.selectionStart === 0) {
-            e.preventDefault();
-            if (currentIndex > 0) {
-                inputs[currentIndex - 1].focus();
-                // Place cursor at the end of the input
-                const len = inputs[currentIndex - 1].value.length;
-                inputs[currentIndex - 1].setSelectionRange(len, len);
-            }
-        }
-    }
-    
-    function updateBinaryRepresentation() {
-        const octets = Array.from(octetInputs).map(input => parseInt(input.value) || 0);
+    function calculateAll() {
+        // Get IP values
+        const ip = [
+            parseInt(octet1.value) || 0,
+            parseInt(octet2.value) || 0,
+            parseInt(octet3.value) || 0,
+            parseInt(octet4.value) || 0
+        ];
+        
+        // Get CIDR value
         const cidr = parseInt(cidrInput.value) || 0;
         
-        // Convert each octet to binary and update bit elements
-        octets.forEach((octet, octetIndex) => {
-            const binaryString = octet.toString(2).padStart(8, '0');
-            const startBitIndex = octetIndex * 8;
-            
-            for (let i = 0; i < 8; i++) {
-                const bitIndex = startBitIndex + i;
-                const bit = bits[bitIndex];
-                
-                bit.textContent = binaryString[i];
-                
-                // Clear existing classes
-                bit.classList.remove('one', 'zero');
-                
-                // Add new class based on bit value
-                if (binaryString[i] === '1') {
-                    bit.classList.add('one');
-                } else {
-                    bit.classList.add('zero');
-                }
-                
-                // Highlight network vs host portion based on CIDR
-                if (bitIndex < cidr) {
-                    bit.style.opacity = "1";
-                } else {
-                    bit.style.opacity = "0.5";
-                }
-            }
-        });
-    }
-    
-    function updateResults() {
-        const ip = getIPFromInputs();
-        const cidr = parseInt(cidrInput.value) || 0;
-        
-        // Calculate all the network information
+        // Calculate netmask
         const netmask = calculateNetmask(cidr);
-        const networkAddress = calculateNetworkAddress(ip, netmask);
-        const broadcastAddress = calculateBroadcastAddress(networkAddress, netmask);
-        const ipCount = calculateIPCount(cidr);
-        const firstUsableIP = calculateFirstUsableIP(networkAddress);
-        const lastUsableIP = calculateLastUsableIP(broadcastAddress);
         
-        // Update the UI
-        netmaskElement.textContent = netmask.join('.');
-        cidrBaseElement.textContent = networkAddress.join('.');
-        broadcastElement.textContent = broadcastAddress.join('.');
-        ipCountElement.textContent = ipCount;
-        firstIpElement.textContent = firstUsableIP.join('.');
-        lastIpElement.textContent = lastUsableIP.join('.');
-    }
-    
-    function getIPFromInputs() {
-        return Array.from(octetInputs).map(input => parseInt(input.value) || 0);
+        // Calculate network address
+        const network = calculateNetworkAddress(ip, netmask);
+        
+        // Calculate broadcast address
+        const broadcast = calculateBroadcastAddress(network, netmask);
+        
+        // Calculate number of hosts
+        const hosts = calculateNumberOfHosts(cidr);
+        
+        // Calculate first and last usable IP
+        const firstIP = calculateFirstUsableIP(network);
+        const lastIP = calculateLastUsableIP(broadcast);
+        
+        // Update outputs
+        netmaskOutput.textContent = netmask.join('.');
+        networkOutput.textContent = network.join('.');
+        broadcastOutput.textContent = broadcast.join('.');
+        hostsOutput.textContent = hosts;
+        firstIPOutput.textContent = firstIP.join('.');
+        lastIPOutput.textContent = lastIP.join('.');
+        
+        // Update binary visualization
+        updateBinaryVisualization(ip, cidr);
     }
     
     function calculateNetmask(cidr) {
-        const mask = new Array(4).fill(0);
+        const mask = [0, 0, 0, 0];
         
         for (let i = 0; i < 4; i++) {
-            // For each octet
-            let bits = Math.min(8, Math.max(0, cidr - 8 * i));
-            if (bits > 0) {
-                mask[i] = 256 - Math.pow(2, 8 - bits);
-            }
+            const bits = Math.min(8, Math.max(0, cidr - 8 * i));
+            mask[i] = bits === 0 ? 0 : 256 - Math.pow(2, 8 - bits);
         }
         
         return mask;
@@ -198,105 +139,96 @@ document.addEventListener('DOMContentLoaded', function() {
         return ip.map((octet, index) => octet & netmask[index]);
     }
     
-    function calculateBroadcastAddress(networkAddress, netmask) {
-        return networkAddress.map((octet, index) => octet | (255 - netmask[index]));
+    function calculateBroadcastAddress(network, netmask) {
+        return network.map((octet, index) => octet | (255 - netmask[index]));
     }
     
-    function calculateIPCount(cidr) {
-        return Math.pow(2, 32 - cidr);
+    function calculateNumberOfHosts(cidr) {
+        return Math.max(1, Math.pow(2, 32 - cidr));
     }
     
-    function calculateFirstUsableIP(networkAddress) {
-        const firstIP = [...networkAddress];
-        
-        // Increment the last octet by 1
-        // Unless it's a /31 or /32 network where the first IP is the network address
+    function calculateFirstUsableIP(network) {
+        // If it's a /31 or /32, the first IP is the network address
         const cidr = parseInt(cidrInput.value) || 0;
-        if (cidr < 31) {
-            firstIP[3] += 1;
+        if (cidr >= 31) {
+            return [...network];
         }
         
+        const firstIP = [...network];
+        firstIP[3]++; // Increment last octet
         return firstIP;
     }
     
-    function calculateLastUsableIP(broadcastAddress) {
-        const lastIP = [...broadcastAddress];
-        
-        // Decrement the last octet by 1
-        // Unless it's a /31 or /32 network where the last IP is the broadcast address
+    function calculateLastUsableIP(broadcast) {
+        // If it's a /31 or /32, the last IP is the broadcast address
         const cidr = parseInt(cidrInput.value) || 0;
-        if (cidr < 31) {
-            lastIP[3] -= 1;
+        if (cidr >= 31) {
+            return [...broadcast];
         }
         
+        const lastIP = [...broadcast];
+        lastIP[3]--; // Decrement last octet
         return lastIP;
     }
     
-    function getCurrentCIDRNotation() {
-        const ip = getIPFromInputs();
-        const cidr = cidrInput.value;
-        return `${ip.join('.')}/${cidr}`;
-    }
-    
-    function copyToClipboard(text) {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-    }
-    
-    function showCopyNotification(button, message) {
-        const originalText = button.textContent;
-        button.textContent = message;
+    function updateBinaryVisualization(ip, cidr) {
+        // Clear existing visualization
+        binaryVis.innerHTML = '';
         
-        setTimeout(() => {
-            button.textContent = originalText;
-        }, 1500);
-    }
-    
-    function generateShareUrl() {
-        const ip = getIPFromInputs();
-        const cidr = cidrInput.value;
-        const params = new URLSearchParams();
-        params.set('ip', ip.join('.'));
-        params.set('cidr', cidr);
+        // Convert IP to binary
+        const binaryIP = ip.map(octet => {
+            return octet.toString(2).padStart(8, '0');
+        }).join('');
         
-        return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    }
-    
-    function checkUrlParameters() {
-        const params = new URLSearchParams(window.location.search);
-        const ipParam = params.get('ip');
-        const cidrParam = params.get('cidr');
+        // Create binary visualization with different colors
+        const octetColors = {
+            0: '#b794f4', // Purple for first octet
+            1: '#fc8181', // Red for second octet
+            2: '#4ade80', // Green for third octet
+            3: '#fac858'  // Yellow for fourth octet
+        };
         
-        if (ipParam) {
-            const ipParts = ipParam.split('.');
-            if (ipParts.length === 4) {
-                for (let i = 0; i < 4; i++) {
-                    const value = parseInt(ipParts[i]);
-                    if (!isNaN(value) && value >= 0 && value <= 255) {
-                        octetInputs[i].value = value;
-                    }
-                }
+        for (let i = 0; i < 32; i++) {
+            const bit = document.createElement('div');
+            bit.classList.add('bit');
+            
+            // Determine which octet this bit belongs to
+            const octetIndex = Math.floor(i / 8);
+            bit.style.backgroundColor = octetColors[octetIndex];
+            
+            // Set opacity based on whether it's a network or host bit
+            if (i < cidr) {
+                bit.classList.add('network-bit');
+            } else {
+                bit.classList.add('host-bit');
+                bit.style.opacity = '0.7'; // Make host bits semi-transparent
+            }
+            
+            bit.textContent = binaryIP[i];
+            binaryVis.appendChild(bit);
+            
+            // Add space between octets
+            if ((i + 1) % 8 === 0 && i < 31) {
+                const spacer = document.createElement('div');
+                spacer.style.width = '8px';
+                binaryVis.appendChild(spacer);
             }
         }
-        
-        if (cidrParam) {
-            const value = parseInt(cidrParam);
-            if (!isNaN(value) && value >= 0 && value <= 32) {
-                cidrInput.value = value;
-            }
-        }
-        
-        // Update the calculator with the URL parameters
-        updateAll();
     }
     
-    function updateAll() {
-        updateBinaryRepresentation();
-        updateResults();
+    function setupAccordion() {
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                // Toggle active class on header
+                header.classList.toggle('active');
+                
+                // Toggle active class on content
+                const content = header.nextElementSibling;
+                content.classList.toggle('active');
+            });
+        });
     }
 });
 

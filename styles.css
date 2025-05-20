@@ -2,289 +2,272 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f0f4f8;
-    padding: 20px;
     color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 h1 {
-    color: #2c3e50;
-    font-size: 28px;
-    margin-top: 20px;
+    color: #1a202c;
+    margin-bottom: 5px;
 }
 
-.calculator-container {
+header p {
+    color: #4a5568;
+}
+
+/* Calculator Card */
+.calculator {
     background-color: white;
     border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     margin-bottom: 30px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
-.ip-input-container {
+/* IP Input Section */
+.ip-input {
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    margin-bottom: 25px;
-    gap: 8px;
-}
-
-.ip-boxes {
-    display: flex;
-    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
 }
 
 .octet {
     width: 60px;
     height: 60px;
+}
+
+.octet input {
+    width: 100%;
+    height: 100%;
+    font-size: 1.2rem;
     text-align: center;
-    font-size: 24px;
-    font-weight: bold;
     border: none;
     border-radius: 8px;
-    margin: 0 3px;
-    background-color: #b39ddb;
-    color: #333;
 }
 
-.octet:nth-child(1) {
-    background-color: #b39ddb; /* Purple */
+/* Color-coded octets */
+#octet1 {
+    background-color: #b794f4; /* Purple for first octet */
 }
 
-.octet:nth-child(3) {
-    background-color: #ef9a9a; /* Red */
+#octet2 {
+    background-color: #fc8181; /* Red for second octet */
 }
 
-.octet:nth-child(5) {
-    background-color: #81c784; /* Green */
+#octet3 {
+    background-color: #4ade80; /* Green for third octet */
 }
 
-.octet:nth-child(7) {
-    background-color: #ffd54f; /* Yellow */
+#octet4 {
+    background-color: #fac858; /* Yellow for fourth octet */
 }
 
-.slash {
-    font-size: 28px;
+.cidr input {
+    background-color: #cbd5e0;
+    width: 100%;
+    height: 100%;
+    font-size: 1.2rem;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+}
+
+.dot, .slash {
     font-weight: bold;
+    font-size: 1.5rem;
     margin: 0 5px;
 }
 
-.cidr-input input {
-    width: 60px;
-    height: 60px;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    background-color: #e0e0e0;
-    color: #333;
+/* Binary Visualization */
+.binary-visualization {
+    margin: 20px 0;
 }
 
-.binary-representation {
+.binary-row {
     display: flex;
+    margin-bottom: 10px;
     justify-content: center;
-    margin-bottom: 30px;
-    gap: 8px;
-}
-
-.binary-group {
-    display: flex;
-    gap: 2px;
 }
 
 .bit {
-    width: 25px;
-    height: 25px;
+    width: 26px;
+    height: 26px;
+    margin: 0 1px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 4px;
-    background-color: #e0e0e0;
-    color: white;
+    font-family: monospace;
+    font-size: 0.9rem;
 }
 
-/* Coloring binary groups to match IP octets */
-.binary-group:nth-child(1) .bit {
-    background-color: #b39ddb; /* Purple for 1st octet */
+.network-bit {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
-.binary-group:nth-child(2) .bit {
-    background-color: #ef9a9a; /* Red for 2nd octet */
+.host-bit {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
-.binary-group:nth-child(3) .bit {
-    background-color: #81c784; /* Green for 3rd octet */
-}
-
-.binary-group:nth-child(4) .bit {
-    background-color: #ffd54f; /* Yellow for 4th octet */
-}
-
-/* Changing color based on bit value */
-.bit.one {
-    opacity: 1;
-}
-
-.bit.zero {
-    opacity: 0.5;
-}
-
+/* Results Section */
 .results {
-    margin-top: 20px;
-}
-
-.result-row {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 .result-item {
-    text-align: center;
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .result-value {
-    font-size: 20px;
     font-weight: bold;
+    font-size: 1.1rem;
     margin-bottom: 5px;
 }
 
 .result-label {
-    font-size: 14px;
-    color: #7f8c8d;
+    color: #718096;
+    font-size: 0.9rem;
 }
 
-.buttons {
+/* Action Buttons */
+.actions {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #3498db;
+.btn {
+    background-color: #4299e1;
     color: white;
     border: none;
+    padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-button:hover {
-    background-color: #2980b9;
+.btn:hover {
+    background-color: #3182ce;
 }
 
-.faq-container {
-    background-color: white;
+/* FAQ Section */
+.faq {
+    background-color: #f8fafc;
     border-radius: 10px;
-    padding: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    margin: 0 auto 30px auto;
+    padding: 20px;
 }
 
-h2 {
+.faq h2 {
     text-align: center;
-    color: #2c3e50;
     margin-bottom: 20px;
+    color: #2d3748;
 }
 
-.faq-item {
-    border-bottom: 1px solid #e0e0e0;
+.accordion-item {
     margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
-.faq-question {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
+.accordion-header {
+    width: 100%;
+    padding: 15px;
+    background-color: white;
+    text-align: left;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.2s;
 }
 
-.faq-question h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
+.accordion-header:after {
+    content: "▼";
+    font-size: 0.8rem;
+    color: #718096;
 }
 
-.arrow {
-    font-size: 12px;
-    transition: transform 0.3s;
+.accordion-header.active:after {
+    content: "▲";
 }
 
-.faq-item.active .arrow {
-    transform: rotate(180deg);
+.accordion-header:hover {
+    background-color: #f7fafc;
 }
 
-.faq-answer {
-    padding: 0 0 15px;
-    display: none;
-    color: #555;
-    line-height: 1.6;
+.accordion-content {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease;
 }
 
-.faq-item.active .faq-answer {
-    display: block;
+.accordion-content.active {
+    padding: 15px;
+    max-height: 500px;
 }
 
-.faq-answer ul {
+.accordion-content ul {
     padding-left: 20px;
     margin-top: 10px;
 }
 
-.faq-answer li {
-    margin-bottom: 5px;
-}
-
-footer {
-    text-align: center;
-    margin-top: 30px;
-    color: #7f8c8d;
-    font-size: 14px;
-}
-
+/* Responsive design */
 @media (max-width: 768px) {
-    .ip-input-container {
-        flex-direction: column;
-        gap: 15px;
+    .results {
+        grid-template-columns: repeat(2, 1fr);
     }
     
-    .result-row {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .result-item {
-        margin-bottom: 10px;
-    }
-    
-    .binary-representation {
-        flex-wrap: wrap;
-    }
-    
-    .octet, .cidr-input input {
+    .octet, .cidr {
         width: 50px;
         height: 50px;
-        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .results {
+        grid-template-columns: 1fr;
+    }
+    
+    .octet, .cidr {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .octet input, .cidr input {
+        font-size: 1rem;
+    }
+    
+    .ip-input {
+        font-size: 1rem;
     }
 }
 

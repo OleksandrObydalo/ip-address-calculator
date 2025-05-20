@@ -2,175 +2,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPv4 CIDR Calculator</title>
+    <title>IP / CIDR Calculator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Visualize and Calculate Network Ranges with IPv4 CIDR Blocks</h1>
-    </header>
-    
-    <main>
-        <div class="calculator-container">
-            <div class="ip-input-container">
-                <div class="ip-boxes">
-                    <input type="text" class="octet" maxlength="3" value="192"> .
-                    <input type="text" class="octet" maxlength="3" value="168"> .
-                    <input type="text" class="octet" maxlength="3" value="254"> .
-                    <input type="text" class="octet" maxlength="3" value="144">
+    <div class="container">
+        <header>
+            <h1>IP / CIDR Calculator</h1>
+            <p>Visualize and Calculate Network Ranges with IPv4 CIDR Blocks</p>
+        </header>
+
+        <main class="calculator">
+            <div class="ip-input">
+                <div class="octet">
+                    <input type="number" id="octet1" min="0" max="255" value="10">
                 </div>
-                <div class="slash">/</div>
-                <div class="cidr-input">
-                    <input type="text" id="cidr" value="24" maxlength="2">
+                <span class="dot">.</span>
+                <div class="octet">
+                    <input type="number" id="octet2" min="0" max="255" value="88">
                 </div>
-            </div>
-            
-            <div class="binary-representation">
-                <div class="binary-group">
-                    <div class="bit">1</div>
-                    <div class="bit">1</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
+                <span class="dot">.</span>
+                <div class="octet">
+                    <input type="number" id="octet3" min="0" max="255" value="135">
                 </div>
-                <div class="binary-group">
-                    <div class="bit">1</div>
-                    <div class="bit">0</div>
-                    <div class="bit">1</div>
-                    <div class="bit">0</div>
-                    <div class="bit">1</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
+                <span class="dot">.</span>
+                <div class="octet">
+                    <input type="number" id="octet4" min="0" max="255" value="144">
                 </div>
-                <div class="binary-group">
-                    <div class="bit">1</div>
-                    <div class="bit">1</div>
-                    <div class="bit">1</div>
-                    <div class="bit">1</div>
-                    <div class="bit">1</div>
-                    <div class="bit">1</div>
-                    <div class="bit">1</div>
-                    <div class="bit">0</div>
-                </div>
-                <div class="binary-group">
-                    <div class="bit">1</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">1</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
-                    <div class="bit">0</div>
+                <span class="slash">/</span>
+                <div class="cidr">
+                    <input type="number" id="cidr" min="0" max="32" value="28">
                 </div>
             </div>
-            
+
+            <div class="binary-visualization">
+                <div class="binary-row" id="binary-vis"></div>
+            </div>
+
             <div class="results">
-                <div class="result-row">
-                    <div class="result-item">
-                        <div class="result-value" id="netmask">255.255.255.0</div>
-                        <div class="result-label">Netmask</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="cidr-base">192.168.254.0</div>
-                        <div class="result-label">CIDR Base IP</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="broadcast">192.168.254.255</div>
-                        <div class="result-label">Broadcast IP</div>
-                    </div>
+                <div class="result-item">
+                    <div id="netmask" class="result-value">255.255.255.240</div>
+                    <div class="result-label">Netmask</div>
                 </div>
-                
-                <div class="result-row">
-                    <div class="result-item">
-                        <div class="result-value" id="ip-count">256</div>
-                        <div class="result-label">Count</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="first-ip">192.168.254.1</div>
-                        <div class="result-label">First Usable IP</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="last-ip">192.168.254.254</div>
-                        <div class="result-label">Last Usable IP</div>
-                    </div>
+                <div class="result-item">
+                    <div id="network" class="result-value">10.88.135.144</div>
+                    <div class="result-label">CIDR Base IP</div>
                 </div>
-                
-                <div class="buttons">
-                    <button id="copy-cidr">Copy CIDR</button>
-                    <button id="copy-share">Copy Share Link</button>
+                <div class="result-item">
+                    <div id="broadcast" class="result-value">10.88.135.159</div>
+                    <div class="result-label">Broadcast IP</div>
+                </div>
+                <div class="result-item">
+                    <div id="hosts" class="result-value">16</div>
+                    <div class="result-label">Count</div>
+                </div>
+                <div class="result-item">
+                    <div id="first-ip" class="result-value">10.88.135.145</div>
+                    <div class="result-label">First Usable IP</div>
+                </div>
+                <div class="result-item">
+                    <div id="last-ip" class="result-value">10.88.135.158</div>
+                    <div class="result-label">Last Usable IP</div>
                 </div>
             </div>
-        </div>
-        
-        <div class="faq-container">
+
+            <div class="actions">
+                <button id="copy-cidr" class="btn">Copy CIDR</button>
+                <button id="copy-share-link" class="btn">Copy Share Link</button>
+            </div>
+        </main>
+
+        <section class="faq">
             <h2>CIDR & Subnetting FAQ</h2>
-            
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>What is CIDR?</h3>
-                    <span class="arrow">▼</span>
+            <div class="accordion">
+                <div class="accordion-item">
+                    <button class="accordion-header">What is CIDR?</button>
+                    <div class="accordion-content">
+                        <p>CIDR (Classless Inter-Domain Routing) is a method for allocating IP addresses and routing IP packets. It replaced the previous addressing architecture of classful network design in the Internet. CIDR notation combines the network address with the prefix length, separated by a slash (/) - e.g., 192.168.1.0/24.</p>
+                    </div>
                 </div>
-                <div class="faq-answer">
-                    <p>CIDR (Classless Inter-Domain Routing) is a method for allocating IP addresses and routing IP packets. It replaces the older system based on classes A, B, and C. CIDR notation combines the network address with a suffix indicating the number of bits in the network prefix, e.g., 192.168.1.0/24.</p>
+
+                <div class="accordion-item">
+                    <button class="accordion-header">Why is CIDR notation useful?</button>
+                    <div class="accordion-content">
+                        <p>CIDR notation provides a more flexible and efficient way to allocate IP addresses compared to the older classful IP addressing. It allows for variable-length subnet masking (VLSM), which helps reduce IP address waste and allows for more efficient routing tables.</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>Why is CIDR notation useful?</h3>
-                    <span class="arrow">▼</span>
+
+                <div class="accordion-item">
+                    <button class="accordion-header">How is an IP address structured?</button>
+                    <div class="accordion-content">
+                        <p>An IPv4 address consists of 32 bits divided into four 8-bit octets (bytes), displayed as decimal numbers separated by dots (e.g., 192.168.1.1). Each octet ranges from 0 to 255. The IP address is divided into network and host portions, determined by the subnet mask or CIDR prefix.</p>
+                    </div>
                 </div>
-                <div class="faq-answer">
-                    <p>CIDR notation offers a more flexible and efficient way to allocate IP addresses compared to the older classful addressing. It allows network administrators to allocate address blocks of exactly the right size, reducing address waste. It also simplifies routing tables by allowing route aggregation.</p>
+
+                <div class="accordion-item">
+                    <button class="accordion-header">What does the number after the slash mean?</button>
+                    <div class="accordion-content">
+                        <p>The number after the slash in CIDR notation (e.g., /24 in 192.168.1.0/24) represents the prefix length - the number of bits used for the network portion of the address. The remaining bits (32 minus the prefix length) are used for host addresses. A higher prefix number means a smaller network with fewer hosts.</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>How is an IP address structured?</h3>
-                    <span class="arrow">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>An IPv4 address consists of 32 bits, usually represented as four 8-bit octets (bytes) in decimal form separated by dots (e.g., 192.168.1.1). Each octet can have a value from 0 to 255. The address is divided into network and host portions, with the CIDR prefix length determining how many bits are used for the network part.</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>What does the number after the slash mean?</h3>
-                    <span class="arrow">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>The number after the slash in CIDR notation (e.g., /24 in 192.168.1.0/24) represents the number of bits used for the network portion of the address. For example, /24 means the first 24 bits (first three octets) identify the network, while the remaining 8 bits are available for host addresses. This determines the size of the network - a smaller number after the slash means a larger network.</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>How does this calculator help?</h3>
-                    <span class="arrow">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>This calculator helps you understand IP addressing by:</p>
-                    <ul>
-                        <li>Calculating network information from an IP address and CIDR prefix</li>
-                        <li>Displaying the binary representation to better understand how IP addressing works</li>
-                        <li>Showing key values like netmask, network address, broadcast address, and usable IP range</li>
-                        <li>Helping network administrators plan and document their IP address allocation</li>
-                    </ul>
+
+                <div class="accordion-item">
+                    <button class="accordion-header">How does this calculator help?</button>
+                    <div class="accordion-content">
+                        <p>This calculator helps network administrators and IT professionals by:
+                        <ul>
+                            <li>Calculating network address, broadcast address, and usable IP range</li>
+                            <li>Visualizing the IP address in binary to better understand network/host boundaries</li>
+                            <li>Determining the total number of IP addresses in a subnet</li>
+                            <li>Providing an easy way to share subnet information with colleagues</li>
+                        </ul>
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
-    
-    <footer>
-        <p>© 2023 IPv4 CIDR Calculator</p>
-    </footer>
-    
+        </section>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
