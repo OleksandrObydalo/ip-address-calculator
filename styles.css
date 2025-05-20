@@ -1,0 +1,290 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f0f4f8;
+    padding: 20px;
+    color: #333;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-top: 20px;
+}
+
+.calculator-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ip-input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 8px;
+}
+
+.ip-boxes {
+    display: flex;
+    align-items: center;
+}
+
+.octet {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    margin: 0 3px;
+    background-color: #b39ddb;
+    color: #333;
+}
+
+.octet:nth-child(1) {
+    background-color: #b39ddb; /* Purple */
+}
+
+.octet:nth-child(3) {
+    background-color: #ef9a9a; /* Red */
+}
+
+.octet:nth-child(5) {
+    background-color: #81c784; /* Green */
+}
+
+.octet:nth-child(7) {
+    background-color: #ffd54f; /* Yellow */
+}
+
+.slash {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0 5px;
+}
+
+.cidr-input input {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.binary-representation {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+    gap: 8px;
+}
+
+.binary-group {
+    display: flex;
+    gap: 2px;
+}
+
+.bit {
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    background-color: #e0e0e0;
+    color: white;
+}
+
+/* Coloring binary groups to match IP octets */
+.binary-group:nth-child(1) .bit {
+    background-color: #b39ddb; /* Purple for 1st octet */
+}
+
+.binary-group:nth-child(2) .bit {
+    background-color: #ef9a9a; /* Red for 2nd octet */
+}
+
+.binary-group:nth-child(3) .bit {
+    background-color: #81c784; /* Green for 3rd octet */
+}
+
+.binary-group:nth-child(4) .bit {
+    background-color: #ffd54f; /* Yellow for 4th octet */
+}
+
+/* Changing color based on bit value */
+.bit.one {
+    opacity: 1;
+}
+
+.bit.zero {
+    opacity: 0.5;
+}
+
+.results {
+    margin-top: 20px;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.result-item {
+    text-align: center;
+    flex: 1;
+}
+
+.result-value {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.result-label {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.faq-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+}
+
+h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.faq-item {
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 10px;
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    cursor: pointer;
+}
+
+.faq-question h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.arrow {
+    font-size: 12px;
+    transition: transform 0.3s;
+}
+
+.faq-item.active .arrow {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    padding: 0 0 15px;
+    display: none;
+    color: #555;
+    line-height: 1.6;
+}
+
+.faq-item.active .faq-answer {
+    display: block;
+}
+
+.faq-answer ul {
+    padding-left: 20px;
+    margin-top: 10px;
+}
+
+.faq-answer li {
+    margin-bottom: 5px;
+}
+
+footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .ip-input-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .result-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .result-item {
+        margin-bottom: 10px;
+    }
+    
+    .binary-representation {
+        flex-wrap: wrap;
+    }
+    
+    .octet, .cidr-input input {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+}
+
