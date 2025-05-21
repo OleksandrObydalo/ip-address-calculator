@@ -116,6 +116,16 @@
                 <button id="copy-cidr" class="btn">Copy CIDR</button>
                 <button id="copy-share-link" class="btn">Copy Share Link</button>
             </div>
+
+            <!-- Subnet Splitter (new section) -->
+            <div class="subnet-splitter">
+                <h3>Split Network</h3>
+                <div class="splitter-controls">
+                    <input type="number" id="subnet-count" min="2" max="256" value="4" placeholder="Number of subnets">
+                    <button id="split-network" class="btn">Split Network</button>
+                </div>
+                <div id="subnet-results" class="subnet-results"></div>
+            </div>
         </main>
 
         <section class="faq">

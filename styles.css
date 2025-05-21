@@ -237,6 +237,54 @@ header p {
     background-color: #3182ce;
 }
 
+/* Subnet Splitter Section */
+.subnet-splitter {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.subnet-splitter h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #2d3748;
+}
+
+.splitter-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.splitter-controls input {
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    width: 150px;
+    text-align: center;
+}
+
+.subnet-results {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.subnet-item {
+    background-color: #f8fafc;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #e2e8f0;
+}
+
+.subnet-item-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #4299e1;
+}
+
 /* FAQ Section */
 .faq {
     background-color: #f8fafc;
@@ -312,6 +360,10 @@ header p {
     .octet, .cidr {
         width: 50px;
         height: 50px;
+    }
+    
+    .subnet-results {
+        grid-template-columns: 1fr;
     }
 }
 

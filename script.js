@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyButton = document.getElementById('copy-cidr');
     const shareLinkButton = document.getElementById('copy-share-link');
     
+    // Subnet splitter elements
+    const subnetCount = document.getElementById('subnet-count');
+    const splitButton = document.getElementById('split-network');
+    const subnetResults = document.getElementById('subnet-results');
+    
     // Mode toggle
     let currentMode = 'ipv4';
     
@@ -151,6 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(err => {
                 console.error('Could not copy text: ', err);
             });
+    });
+    
+    // Subnet splitting functionality
+    splitButton.addEventListener('click', () => {
+        if (currentMode === 'ipv4') {
+            splitIPv4Network();
+        } else {
+            splitIPv6Network();
+        }
     });
     
     // IPv4 calculation functions
@@ -555,6 +569,160 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    function splitIPv4Network() {
+        // Get current network parameters
+        const ip = [
+            parseInt(octet1.value) || 0,
+            parseInt(octet2.value) || 0,
+            parseInt(octet3.value) || 0,
+            parseInt(octet4.value) || 0
+        ];
+        const currentCidr = parseInt(cidrInput.value) || 0;
+        const count = parseInt(subnetCount.value) || 2;
+        
+        // Calculate required bits for subnets
+        const bitsNeeded = Math.ceil(Math.log2(count));
+        const newCidr = currentCidr + bitsNeeded;
+        
+        // Check if we have enough bits
+        if (newCidr > 32) {
+            showSplitError("Cannot split further: not enough host bits available.");
+            return;
+        }
+        
+        // Calculate network address
+        const netmask = calculateNetmask(currentCidr);
+        const network = calculateNetworkAddress(ip, netmask);
+        
+        // Generate subnets
+        const subnets = [];
+        const subnetSize = Math.pow(2, 32 - newCidr);
+        const actualSubnets = Math.min(count, Math.pow(2, bitsNeeded));
+        
+        for (let i = 0; i < actualSubnets; i++) {
+            const subnetIp = [...network];
+            
+            // Calculate the subnet IP
+            let increment = i * subnetSize;
+            for (let j = 3; j >= 0; j--) {
+                const octetIncrement = increment % 256;
+                subnetIp[j] = (subnetIp[j] + octetIncrement) % 256;
+                increment = Math.floor(increment / 256);
+            }
+            
+            // Calculate the subnet broadcast
+            const subnetNetmask = calculateNetmask(newCidr);
+            const subnetBroadcast = calculateBroadcastAddress(subnetIp, subnetNetmask);
+            
+            subnets.push({
+                network: subnetIp.join('.'),
+                cidr: newCidr,
+                broadcast: subnetBroadcast.join('.'),
+                hosts: calculateNumberOfHosts(newCidr),
+                firstIP: calculateFirstUsableIP(subnetIp).join('.'),
+                lastIP: calculateLastUsableIP(subnetBroadcast).join('.')
+            });
+        }
+        
+        displaySubnets(subnets);
+    }
+    
+    function splitIPv6Network() {
+        // Get current network parameters
+        const ipv6 = ipv6Address.value.trim();
+        const currentCidr = parseInt(ipv6CidrInput.value) || 0;
+        const count = parseInt(subnetCount.value) || 2;
+        
+        // Calculate required bits for subnets
+        const bitsNeeded = Math.ceil(Math.log2(count));
+        const newCidr = currentCidr + bitsNeeded;
+        
+        // Check if we have enough bits
+        if (newCidr > 128) {
+            showSplitError("Cannot split further: not enough host bits available.");
+            return;
+        }
+        
+        // Calculate network address
+        const network = calculateIPv6NetworkAddress(ipv6, currentCidr);
+        
+        // Generate subnets
+        const subnets = [];
+        const actualSubnets = Math.min(count, Math.pow(2, bitsNeeded));
+        
+        for (let i = 0; i < actualSubnets; i++) {
+            // Expand the network address
+            const expandedNetwork = expandIPv6(network);
+            const hextets = expandedNetwork.split(':');
+            
+            // Determine which hextet and bit to modify
+            const hextetIndex = Math.floor(currentCidr / 16);
+            const bitIndex = currentCidr % 16;
+            
+            // Convert the current hextet to binary
+            let hextetValue = parseInt(hextets[hextetIndex], 16);
+            
+            // Calculate subnet bits
+            let shiftAmount = 16 - bitIndex - bitsNeeded;
+            if (shiftAmount >= 0) {
+                // All subnet bits fit in the current hextet
+                const subnetBits = (i << shiftAmount) & 0xFFFF;
+                hextetValue = (hextetValue & ~(((1 << bitsNeeded) - 1) << shiftAmount)) | subnetBits;
+                hextets[hextetIndex] = hextetValue.toString(16).padStart(4, '0');
+            } else {
+                // Subnet bits span multiple hextets
+                // This is a simplified approach - real implementation would need to handle this case
+                // by distributing bits across hextets
+                showSplitError("Subnet calculation across hextet boundaries not implemented");
+                return;
+            }
+            
+            // Create subnet network address
+            const subnetNetwork = compressIPv6(hextets.join(':'));
+            
+            // Calculate subnet broadcast/last address
+            const subnetBroadcast = calculateIPv6BroadcastAddress(subnetNetwork, newCidr);
+            
+            subnets.push({
+                network: subnetNetwork,
+                cidr: newCidr,
+                broadcast: subnetBroadcast,
+                hosts: calculateIPv6NumberOfHosts(newCidr),
+                firstIP: calculateIPv6FirstUsableIP(subnetNetwork),
+                lastIP: calculateIPv6LastUsableIP(subnetBroadcast)
+            });
+        }
+        
+        displaySubnets(subnets);
+    }
+    
+    function displaySubnets(subnets) {
+        // Clear previous results
+        subnetResults.innerHTML = '';
+        
+        // Display each subnet
+        subnets.forEach((subnet, index) => {
+            const subnetElement = document.createElement('div');
+            subnetElement.className = 'subnet-item';
+            
+            subnetElement.innerHTML = `
+                <div class="subnet-item-header">Subnet ${index + 1}: ${subnet.network}/${subnet.cidr}</div>
+                <div>CIDR Base IP: ${subnet.network}</div>
+                <div>${currentMode === 'ipv4' ? 'Broadcast' : 'Last'} IP: ${subnet.broadcast}</div>
+                <div>Hosts: ${subnet.hosts}</div>
+                <div>First Usable IP: ${subnet.firstIP}</div>
+                <div>Last Usable IP: ${subnet.lastIP}</div>
+            `;
+            
+            subnetResults.appendChild(subnetElement);
+        });
+    }
+    
+    function showSplitError(message) {
+        subnetResults.innerHTML = `<div class="subnet-error" style="color: red; grid-column: 1 / -1; text-align: center;">${message}</div>`;
+    }
+    
+    // Setup accordion functionality
     function setupAccordion() {
         const accordionHeaders = document.querySelectorAll('.accordion-header');
         
