@@ -7,7 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const cidrInput = document.getElementById('cidr');
     const binaryVis = document.getElementById('binary-vis');
     
-    // Result outputs
+    // IPv6 elements
+    const ipv6Address = document.getElementById('ipv6-address');
+    const ipv6CidrInput = document.getElementById('ipv6-cidr');
+    
+    // Mode selector buttons
+    const ipv4Btn = document.getElementById('ipv4-btn');
+    const ipv6Btn = document.getElementById('ipv6-btn');
+    const ipv4Calculator = document.getElementById('ipv4-calculator');
+    const ipv6Calculator = document.getElementById('ipv6-calculator');
+    
+    // Result outputs - IPv4
     const netmaskOutput = document.getElementById('netmask');
     const networkOutput = document.getElementById('network');
     const broadcastOutput = document.getElementById('broadcast');
@@ -15,11 +25,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstIPOutput = document.getElementById('first-ip');
     const lastIPOutput = document.getElementById('last-ip');
     
+    // Result outputs - IPv6
+    const ipv6NetmaskOutput = document.getElementById('ipv6-netmask');
+    const ipv6NetworkOutput = document.getElementById('ipv6-network');
+    const ipv6BroadcastOutput = document.getElementById('ipv6-broadcast');
+    const ipv6HostsOutput = document.getElementById('ipv6-hosts');
+    const ipv6FirstIPOutput = document.getElementById('ipv6-first-ip');
+    const ipv6LastIPOutput = document.getElementById('ipv6-last-ip');
+    
     // Action buttons
     const copyButton = document.getElementById('copy-cidr');
     const shareLinkButton = document.getElementById('copy-share-link');
     
-    // Input constraints
+    // Mode toggle
+    let currentMode = 'ipv4';
+    
+    ipv4Btn.addEventListener('click', () => {
+        ipv4Btn.classList.add('active');
+        ipv6Btn.classList.remove('active');
+        ipv4Calculator.classList.add('active');
+        ipv6Calculator.classList.remove('active');
+        currentMode = 'ipv4';
+    });
+    
+    ipv6Btn.addEventListener('click', () => {
+        ipv4Btn.classList.remove('active');
+        ipv6Btn.classList.add('active');
+        ipv4Calculator.classList.remove('active');
+        ipv6Calculator.classList.add('active');
+        currentMode = 'ipv6';
+        calculateIPv6();
+    });
+    
+    // Input constraints for IPv4
     [octet1, octet2, octet3, octet4].forEach(input => {
         input.addEventListener('input', () => {
             const value = parseInt(input.value) || 0;
@@ -36,9 +74,27 @@ document.addEventListener('DOMContentLoaded', () => {
         calculateAll();
     });
     
+    // Input handlers for IPv6
+    ipv6Address.addEventListener('input', () => {
+        calculateIPv6();
+    });
+    
+    ipv6CidrInput.addEventListener('input', () => {
+        const value = parseInt(ipv6CidrInput.value) || 0;
+        if (value < 0) ipv6CidrInput.value = 0;
+        if (value > 128) ipv6CidrInput.value = 128;
+        calculateIPv6();
+    });
+    
     // Check URL for parameters
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('ip') && urlParams.has('cidr')) {
+    if (urlParams.has('v') && urlParams.get('v') === '6' && urlParams.has('ip') && urlParams.has('cidr')) {
+        // IPv6 parameters
+        ipv6Address.value = urlParams.get('ip');
+        ipv6CidrInput.value = urlParams.get('cidr');
+        ipv6Btn.click(); // Switch to IPv6 mode
+    } else if (urlParams.has('ip') && urlParams.has('cidr')) {
+        // IPv4 parameters
         const ip = urlParams.get('ip').split('.');
         const cidr = urlParams.get('cidr');
         
@@ -59,8 +115,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Button functionality
     copyButton.addEventListener('click', () => {
-        const ip = `${octet1.value}.${octet2.value}.${octet3.value}.${octet4.value}/${cidrInput.value}`;
-        navigator.clipboard.writeText(ip)
+        let textToCopy;
+        
+        if (currentMode === 'ipv4') {
+            textToCopy = `${octet1.value}.${octet2.value}.${octet3.value}.${octet4.value}/${cidrInput.value}`;
+        } else {
+            textToCopy = `${ipv6Address.value}/${ipv6CidrInput.value}`;
+        }
+        
+        navigator.clipboard.writeText(textToCopy)
             .then(() => {
                 copyButton.textContent = 'Copied!';
                 setTimeout(() => copyButton.textContent = 'Copy CIDR', 2000);
@@ -71,8 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     shareLinkButton.addEventListener('click', () => {
-        const ip = `${octet1.value}.${octet2.value}.${octet3.value}.${octet4.value}`;
-        const url = `${window.location.origin}${window.location.pathname}?ip=${ip}&cidr=${cidrInput.value}`;
+        let url;
+        
+        if (currentMode === 'ipv4') {
+            const ip = `${octet1.value}.${octet2.value}.${octet3.value}.${octet4.value}`;
+            url = `${window.location.origin}${window.location.pathname}?ip=${ip}&cidr=${cidrInput.value}`;
+        } else {
+            url = `${window.location.origin}${window.location.pathname}?v=6&ip=${encodeURIComponent(ipv6Address.value)}&cidr=${ipv6CidrInput.value}`;
+        }
         
         navigator.clipboard.writeText(url)
             .then(() => {
@@ -84,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
     
+    // IPv4 calculation functions
     function calculateAll() {
         // Get IP values
         const ip = [
@@ -216,6 +286,275 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // IPv6 calculation functions
+    function calculateIPv6() {
+        try {
+            // Get IPv6 address and CIDR
+            const ipv6 = ipv6Address.value.trim();
+            const cidr = parseInt(ipv6CidrInput.value) || 0;
+            
+            // Calculate netmask
+            const netmask = calculateIPv6Netmask(cidr);
+            
+            // Calculate network address
+            const network = calculateIPv6NetworkAddress(ipv6, cidr);
+            
+            // Calculate broadcast/last address
+            const broadcast = calculateIPv6BroadcastAddress(network, cidr);
+            
+            // Calculate number of hosts
+            const hosts = calculateIPv6NumberOfHosts(cidr);
+            
+            // Calculate first and last usable IP
+            const firstIP = calculateIPv6FirstUsableIP(network);
+            const lastIP = calculateIPv6LastUsableIP(broadcast);
+            
+            // Update outputs
+            ipv6NetmaskOutput.textContent = netmask;
+            ipv6NetworkOutput.textContent = network;
+            ipv6BroadcastOutput.textContent = broadcast;
+            ipv6HostsOutput.textContent = hosts;
+            ipv6FirstIPOutput.textContent = firstIP;
+            ipv6LastIPOutput.textContent = lastIP;
+        } catch (error) {
+            console.error('IPv6 calculation error:', error);
+        }
+    }
+    
+    function calculateIPv6Netmask(cidr) {
+        const fullHextetCount = Math.floor(cidr / 16);
+        const remainingBits = cidr % 16;
+        
+        let netmask = '';
+        
+        // Add full hextets
+        for (let i = 0; i < 8; i++) {
+            if (i < fullHextetCount) {
+                netmask += 'ffff';
+            } else if (i === fullHextetCount && remainingBits > 0) {
+                // Calculate partial hextet
+                const hexValue = (0xffff << (16 - remainingBits)) & 0xffff;
+                netmask += hexValue.toString(16).padStart(4, '0');
+            } else {
+                netmask += '0000';
+            }
+            
+            if (i < 7) netmask += ':';
+        }
+        
+        // Compress the IPv6 address
+        return compressIPv6(netmask);
+    }
+    
+    function calculateIPv6NetworkAddress(ipv6, cidr) {
+        // Expand the IPv6 address
+        const expandedIP = expandIPv6(ipv6);
+        
+        // Extract individual hextets
+        const hextets = expandedIP.split(':');
+        
+        // Apply network mask
+        const fullHextetCount = Math.floor(cidr / 16);
+        const remainingBits = cidr % 16;
+        
+        for (let i = 0; i < 8; i++) {
+            if (i > fullHextetCount || (i === fullHextetCount && remainingBits === 0)) {
+                hextets[i] = '0000';
+            } else if (i === fullHextetCount) {
+                // Apply partial mask to this hextet
+                const hextetValue = parseInt(hextets[i], 16);
+                const mask = (0xffff << (16 - remainingBits)) & 0xffff;
+                hextets[i] = (hextetValue & mask).toString(16).padStart(4, '0');
+            }
+        }
+        
+        // Compress the result
+        return compressIPv6(hextets.join(':'));
+    }
+    
+    function calculateIPv6BroadcastAddress(network, cidr) {
+        // Expand the network address
+        const expandedNetwork = expandIPv6(network);
+        
+        // Extract individual hextets
+        const hextets = expandedNetwork.split(':');
+        
+        // Calculate the broadcast address
+        const fullHextetCount = Math.floor(cidr / 16);
+        const remainingBits = cidr % 16;
+        
+        for (let i = 0; i < 8; i++) {
+            if (i > fullHextetCount || (i === fullHextetCount && remainingBits === 0)) {
+                hextets[i] = 'ffff';
+            } else if (i === fullHextetCount) {
+                // Apply partial mask to this hextet
+                const hextetValue = parseInt(hextets[i], 16);
+                const mask = (0xffff >> remainingBits) & 0xffff;
+                hextets[i] = (hextetValue | mask).toString(16).padStart(4, '0');
+            }
+        }
+        
+        // Compress the result
+        return compressIPv6(hextets.join(':'));
+    }
+    
+    function calculateIPv6NumberOfHosts(cidr) {
+        // For IPv6, we can have a truly massive number of hosts
+        if (cidr >= 128) return "1";
+        
+        // For manageable sizes, we can calculate normally
+        if (cidr >= 64) {
+            const hostBits = 128 - cidr;
+            return BigInt(2) ** BigInt(hostBits) + "";
+        }
+        
+        // For very large networks, use formatted strings
+        const exponent = 128 - cidr;
+        if (exponent <= 20) {
+            return BigInt(2) ** BigInt(exponent) + "";
+        } else {
+            const powerOf1000 = Math.floor(exponent / 10);
+            const formattedNumber = (2 ** (exponent % 10)) * (10 ** (powerOf1000 * 3));
+            return `~${formattedNumber.toExponential()}`;
+        }
+    }
+    
+    function calculateIPv6FirstUsableIP(network) {
+        // In IPv6, we typically consider the network address usable,
+        // but we'll return network + 1 for consistency with IPv4
+        const expandedNetwork = expandIPv6(network);
+        const hextets = expandedNetwork.split(':');
+        
+        // Increment the last non-zero hextet
+        let lastNonZeroIndex = 7;
+        for (let i = 7; i >= 0; i--) {
+            if (hextets[i] !== '0000') {
+                lastNonZeroIndex = i;
+                break;
+            }
+        }
+        
+        // If all hextets are zero, increment the last one
+        if (hextets[lastNonZeroIndex] === '0000') {
+            hextets[7] = '0001';
+        } else {
+            // Otherwise, increment the last non-zero hextet
+            let value = parseInt(hextets[lastNonZeroIndex], 16);
+            value++;
+            hextets[lastNonZeroIndex] = value.toString(16).padStart(4, '0');
+        }
+        
+        return compressIPv6(hextets.join(':'));
+    }
+    
+    function calculateIPv6LastUsableIP(broadcast) {
+        // In IPv6, we typically consider the broadcast address usable,
+        // but we'll return broadcast - 1 for consistency with IPv4
+        const expandedBroadcast = expandIPv6(broadcast);
+        const hextets = expandedBroadcast.split(':');
+        
+        // Decrement the last non-zero hextet
+        for (let i = 7; i >= 0; i--) {
+            if (hextets[i] !== '0000') {
+                let value = parseInt(hextets[i], 16);
+                if (value > 0) {
+                    value--;
+                    hextets[i] = value.toString(16).padStart(4, '0');
+                    break;
+                }
+            }
+        }
+        
+        return compressIPv6(hextets.join(':'));
+    }
+    
+    // IPv6 utility functions
+    function expandIPv6(ipv6) {
+        // Handle the :: notation
+        if (ipv6.includes('::')) {
+            const parts = ipv6.split('::');
+            const leftPart = parts[0] ? parts[0].split(':') : [];
+            const rightPart = parts[1] ? parts[1].split(':') : [];
+            
+            // Calculate how many 0000 blocks to insert
+            const missingBlocks = 8 - (leftPart.length + rightPart.length);
+            
+            // Create the expanded address
+            const expandedParts = [];
+            
+            // Add left part
+            for (const part of leftPart) {
+                expandedParts.push(part.padStart(4, '0'));
+            }
+            
+            // Add missing 0000 blocks
+            for (let i = 0; i < missingBlocks; i++) {
+                expandedParts.push('0000');
+            }
+            
+            // Add right part
+            for (const part of rightPart) {
+                expandedParts.push(part.padStart(4, '0'));
+            }
+            
+            return expandedParts.join(':');
+        } else {
+            // No :: notation, just pad each hextet
+            return ipv6.split(':').map(h => h.padStart(4, '0')).join(':');
+        }
+    }
+    
+    function compressIPv6(ipv6) {
+        // First, expand the address to ensure consistent format
+        const expanded = expandIPv6(ipv6);
+        const hextets = expanded.split(':');
+        
+        // Find longest run of zeros
+        let longestRunStart = -1;
+        let longestRunLength = 0;
+        let currentRunStart = -1;
+        let currentRunLength = 0;
+        
+        for (let i = 0; i < hextets.length; i++) {
+            if (hextets[i] === '0000') {
+                if (currentRunStart === -1) {
+                    currentRunStart = i;
+                    currentRunLength = 1;
+                } else {
+                    currentRunLength++;
+                }
+                
+                if (currentRunLength > longestRunLength) {
+                    longestRunStart = currentRunStart;
+                    longestRunLength = currentRunLength;
+                }
+            } else {
+                currentRunStart = -1;
+                currentRunLength = 0;
+            }
+        }
+        
+        // Only compress if we have at least 2 consecutive zeros
+        if (longestRunLength >= 2) {
+            // Create the compressed address
+            const leftPart = hextets.slice(0, longestRunStart).map(h => parseInt(h, 16).toString(16));
+            const rightPart = hextets.slice(longestRunStart + longestRunLength).map(h => parseInt(h, 16).toString(16));
+            
+            if (leftPart.length === 0 && rightPart.length === 0) {
+                return '::'; // All zeros
+            } else if (leftPart.length === 0) {
+                return '::' + rightPart.join(':');
+            } else if (rightPart.length === 0) {
+                return leftPart.join(':') + '::';
+            } else {
+                return leftPart.join(':') + '::' + rightPart.join(':');
+            }
+        } else {
+            // No compression needed
+            return hextets.map(h => parseInt(h, 16).toString(16)).join(':');
+        }
+    }
+    
     function setupAccordion() {
         const accordionHeaders = document.querySelectorAll('.accordion-header');
         
@@ -231,4 +570,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-

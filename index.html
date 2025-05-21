@@ -9,60 +9,106 @@
     <div class="container">
         <header>
             <h1>IP / CIDR Calculator</h1>
-            <p>Visualize and Calculate Network Ranges with IPv4 CIDR Blocks</p>
+            <p>Visualize and Calculate Network Ranges with IPv4/IPv6 CIDR Blocks</p>
         </header>
 
+        <div class="ip-mode-selector">
+            <button id="ipv4-btn" class="mode-btn active">IPv4</button>
+            <button id="ipv6-btn" class="mode-btn">IPv6</button>
+        </div>
+
         <main class="calculator">
-            <div class="ip-input">
-                <div class="octet">
-                    <input type="number" id="octet1" min="0" max="255" value="10">
+            <!-- IPv4 Calculator (Initial View) -->
+            <div id="ipv4-calculator" class="ip-calculator active">
+                <div class="ip-input">
+                    <div class="octet">
+                        <input type="number" id="octet1" min="0" max="255" value="10">
+                    </div>
+                    <span class="dot">.</span>
+                    <div class="octet">
+                        <input type="number" id="octet2" min="0" max="255" value="88">
+                    </div>
+                    <span class="dot">.</span>
+                    <div class="octet">
+                        <input type="number" id="octet3" min="0" max="255" value="135">
+                    </div>
+                    <span class="dot">.</span>
+                    <div class="octet">
+                        <input type="number" id="octet4" min="0" max="255" value="144">
+                    </div>
+                    <span class="slash">/</span>
+                    <div class="cidr">
+                        <input type="number" id="cidr" min="0" max="32" value="28">
+                    </div>
                 </div>
-                <span class="dot">.</span>
-                <div class="octet">
-                    <input type="number" id="octet2" min="0" max="255" value="88">
+
+                <div class="binary-visualization">
+                    <div class="binary-row" id="binary-vis"></div>
                 </div>
-                <span class="dot">.</span>
-                <div class="octet">
-                    <input type="number" id="octet3" min="0" max="255" value="135">
-                </div>
-                <span class="dot">.</span>
-                <div class="octet">
-                    <input type="number" id="octet4" min="0" max="255" value="144">
-                </div>
-                <span class="slash">/</span>
-                <div class="cidr">
-                    <input type="number" id="cidr" min="0" max="32" value="28">
+
+                <div class="results">
+                    <div class="result-item">
+                        <div id="netmask" class="result-value">255.255.255.240</div>
+                        <div class="result-label">Netmask</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="network" class="result-value">10.88.135.144</div>
+                        <div class="result-label">CIDR Base IP</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="broadcast" class="result-value">10.88.135.159</div>
+                        <div class="result-label">Broadcast IP</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="hosts" class="result-value">16</div>
+                        <div class="result-label">Count</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="first-ip" class="result-value">10.88.135.145</div>
+                        <div class="result-label">First Usable IP</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="last-ip" class="result-value">10.88.135.158</div>
+                        <div class="result-label">Last Usable IP</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="binary-visualization">
-                <div class="binary-row" id="binary-vis"></div>
-            </div>
+            <!-- IPv6 Calculator (Initially Hidden) -->
+            <div id="ipv6-calculator" class="ip-calculator">
+                <div class="ip-input ipv6-input">
+                    <input type="text" id="ipv6-address" placeholder="2001:db8::" value="2001:db8::">
+                    <span class="slash">/</span>
+                    <div class="cidr">
+                        <input type="number" id="ipv6-cidr" min="0" max="128" value="64">
+                    </div>
+                </div>
 
-            <div class="results">
-                <div class="result-item">
-                    <div id="netmask" class="result-value">255.255.255.240</div>
-                    <div class="result-label">Netmask</div>
-                </div>
-                <div class="result-item">
-                    <div id="network" class="result-value">10.88.135.144</div>
-                    <div class="result-label">CIDR Base IP</div>
-                </div>
-                <div class="result-item">
-                    <div id="broadcast" class="result-value">10.88.135.159</div>
-                    <div class="result-label">Broadcast IP</div>
-                </div>
-                <div class="result-item">
-                    <div id="hosts" class="result-value">16</div>
-                    <div class="result-label">Count</div>
-                </div>
-                <div class="result-item">
-                    <div id="first-ip" class="result-value">10.88.135.145</div>
-                    <div class="result-label">First Usable IP</div>
-                </div>
-                <div class="result-item">
-                    <div id="last-ip" class="result-value">10.88.135.158</div>
-                    <div class="result-label">Last Usable IP</div>
+                <div class="results ipv6-results">
+                    <div class="result-item">
+                        <div id="ipv6-netmask" class="result-value">ffff:ffff:ffff:ffff::</div>
+                        <div class="result-label">Netmask</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="ipv6-network" class="result-value">2001:db8::</div>
+                        <div class="result-label">CIDR Base IP</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="ipv6-broadcast" class="result-value">2001:db8:0:0:ffff:ffff:ffff:ffff</div>
+                        <div class="result-label">Last IP</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="ipv6-hosts" class="result-value">18,446,744,073,709,551,616</div>
+                        <div class="result-label">Count</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="ipv6-first-ip" class="result-value">2001:db8::1</div>
+                        <div class="result-label">First Usable IP</div>
+                    </div>
+                    <div class="result-item">
+                        <div id="ipv6-last-ip" class="result-value">2001:db8:0:0:ffff:ffff:ffff:fffe</div>
+                        <div class="result-label">Last Usable IP</div>
+                    </div>
                 </div>
             </div>
 
